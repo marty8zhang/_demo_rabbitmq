@@ -1,0 +1,12 @@
+{
+    "name": "egghdz/test-rabbitmq",
+    "require": {
+        "php-amqplib/php-amqplib": ">=2.6.1"
+    },
+    "authors": [
+        {
+            "name": "Marty Zhang",
+            "email": "marty8zhang@gmail.com"
+        }
+    ]
+}
