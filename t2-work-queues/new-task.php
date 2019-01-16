@@ -7,9 +7,15 @@ use PhpAmqpLib\Message\AMQPMessage;
 $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
 $channel = $connection->channel();
 
-// Declare a queue.
-// A queue will only be created if it doesn't exist already.
-// $channel->queue_declare('hello', false, false, false, false);
+/*
+ * Declare a queue. A queue will only be created if it doesn't exist already.
+ * Notes:
+ *     - RabbitMQ doesn't allow you to re-define an existing queue with different parameters and will return an error to
+ *       any program that tries to do that.
+ *     - The 3rd parameter indicates if the queue is durable (won't be lost even if the RabbitMQ server crashes) or not.
+ *       The persistence guarantees aren't strong, messages are still possible to be lost by this means. E.g., messages
+ *       were only saved to cache, or the server shuts down before/when messages are being saved to the disk.
+ */
 $channel->queue_declare('task_queue', false, true, false, false);
 
 $data = implode(' ', array_slice($argv, 1));
@@ -19,11 +25,10 @@ if (empty($data)) {
 $msg = new AMQPMessage(
     $data,
     // With the persistent delivery mode, messages won't be lost, even if the RabbitMQ server crashes.
-    // Note: The persistence guarantees aren't strong, messages are still possible to be lost by this means.
     array('delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT)
 );
 
-$channel->basic_publish($msg, '', 'hello');
+$channel->basic_publish($msg, '', 'task_queue');
 
 echo " [x] Sent {$data}\n";
 
